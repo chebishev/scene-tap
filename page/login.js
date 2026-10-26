@@ -3,15 +3,12 @@ import {
     createWidget,
     widget,
     align,
-    text_style,
-    setStatusBarVisible,
 } from "@zos/ui";
 import { px } from "@zos/utils";
-import { getDeviceInfo, SCREEN_SHAPE_SQUARE } from "@zos/device";
+import { configurePage, getCenteredLayout, removeElement, SCREEN_WIDTH } from "../modules/ui-helpers";
 import { log as Logger } from "@zos/utils";
 import { BasePage } from "@zeppos/zml/base-page";
 
-const { screenShape, width: WIDTH } = getDeviceInfo();
 const logger = Logger.getLogger("login");
 
 Page(
@@ -19,43 +16,29 @@ Page(
         state: {
             qrContent: null,
             status: "Starting login...",
-            vc: null,
+            renderedWidgets: [],
         },
 
         onInit() {
-            if (screenShape === SCREEN_SHAPE_SQUARE) {
-                setStatusBarVisible(false);
-            }
+            configurePage();
         },
 
         build() {
             this.startLogin();
         },
 
-        createText(parent, text, height, fontSize) {
-            return createWidget(widget.TEXT, {
-                parent,
-                text,
-                color: 0xffffff,
-                align_v: align.CENTER_V,
-                align_h: align.CENTER_H,
-                text_style: text_style.CHAR_WRAP,
-                layout: {
-                    width: "100%",
-                    height,
-                    font_size: fontSize,
-                },
-            });
+        clearRenderedWidgets() {
+            this.state.renderedWidgets.forEach(removeElement);
+            this.state.renderedWidgets = [];
         },
 
-
-
         render() {
-            const margin = px(WIDTH * 0.08);
-            const contentWidth = px(WIDTH * 0.84);
-            const centerX = px(WIDTH / 2);
+            this.clearRenderedWidgets();
 
-            createWidget(widget.TEXT, {
+            const { x: margin, w: contentWidth } = getCenteredLayout();
+            const centerX = px(SCREEN_WIDTH / 2);
+
+            this.state.renderedWidgets.push(createWidget(widget.TEXT, {
                 x: margin,
                 y: px(30),
                 w: contentWidth,
@@ -65,15 +48,15 @@ Page(
                 text_size: px(28),
                 align_h: align.CENTER_H,
                 align_v: align.CENTER_V,
-            });
+            }));
 
             if (this.state.status === "waiting_for_scan" && this.state.qrContent) {
-                const qrSize = px(WIDTH * 0.58);
+                const qrSize = px(SCREEN_WIDTH * 0.58);
                 const qrX = centerX - qrSize / 2;
                 const qrY = px(90);
-                const bgSize = px(WIDTH * 0.625);
+                const bgSize = px(SCREEN_WIDTH * 0.625);
 
-                createWidget(widget.QRCODE, {
+                this.state.renderedWidgets.push(createWidget(widget.QRCODE, {
                     content: this.state.qrContent,
                     x: qrX,
                     y: qrY,
@@ -83,9 +66,9 @@ Page(
                     bg_y: qrY - px(10),
                     bg_w: bgSize,
                     bg_h: bgSize,
-                });
+                }));
 
-                createWidget(widget.TEXT, {
+                this.state.renderedWidgets.push(createWidget(widget.TEXT, {
                     x: margin,
                     y: qrY + qrSize + px(20),
                     w: contentWidth,
@@ -95,9 +78,9 @@ Page(
                     text_size: px(20),
                     align_h: align.CENTER_H,
                     align_v: align.CENTER_V,
-                });
+                }));
             } else {
-                createWidget(widget.TEXT, {
+                this.state.renderedWidgets.push(createWidget(widget.TEXT, {
                     x: margin,
                     y: px(180),
                     w: contentWidth,
@@ -107,7 +90,7 @@ Page(
                     text_size: px(24),
                     align_h: align.CENTER_H,
                     align_v: align.CENTER_V,
-                });
+                }));
             }
         },
 

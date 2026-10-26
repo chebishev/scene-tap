@@ -4,18 +4,13 @@ import {
   widget,
   align,
   text_style,
-  deleteWidget,
   updateLayout,
-  setStatusBarVisible,
 } from "@zos/ui";
 import { px, log as Logger } from "@zos/utils";
-import { getDeviceInfo, SCREEN_SHAPE_SQUARE } from "@zos/device";
+import { configurePage, removeElement } from "../modules/ui-helpers";
 import { BasePage } from "@zeppos/zml/base-page";
 
-const { screenShape } = getDeviceInfo();
 const logger = Logger.getLogger("devices");
-
-const PRIMARY_COLOR = 0x00BC9C;
 
 const pageLayout = {
   left: "0",
@@ -45,9 +40,7 @@ Page(
     },
 
     onInit() {
-      if (screenShape === SCREEN_SHAPE_SQUARE) {
-        setStatusBarVisible(false);
-      }
+      configurePage();
     },
 
     build() {
@@ -61,23 +54,8 @@ Page(
 
     clearPage() {
       if (this.state.vc) {
-        const vc = this.state.vc;
-        const children = vc.layoutChildren;
-
-        deleteWidget(vc);
-        children.forEach((item) => this.removeElement(item));
-
+        removeElement(this.state.vc);
         this.state.vc = null;
-      }
-    },
-
-    removeElement(element) {
-      if (element.getType() === widget.VIRTUAL_CONTAINER) {
-        const children = element.layoutChildren;
-        deleteWidget(element);
-        children.forEach((item) => this.removeElement(item));
-      } else {
-        deleteWidget(element);
       }
     },
 

@@ -4,14 +4,11 @@ import {
   widget,
   align,
   text_style,
-  setStatusBarVisible,
 } from "@zos/ui";
 import { px } from "@zos/utils";
-import { getDeviceInfo, SCREEN_SHAPE_SQUARE } from "@zos/device";
+import { configurePage } from "../modules/ui-helpers";
 import { push } from "@zos/router";
 import { BasePage } from "@zeppos/zml/base-page";
-
-const { screenShape } = getDeviceInfo();
 
 const menuButtonColor = 0x00bc9c;
 
@@ -49,9 +46,7 @@ Page(
     },
 
     onInit() {
-      if (screenShape === SCREEN_SHAPE_SQUARE) {
-        setStatusBarVisible(false);
-      }
+      configurePage();
     },
 
     build() {

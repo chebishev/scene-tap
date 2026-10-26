@@ -3,16 +3,13 @@ import {
   widget,
   align,
   text_style,
-  deleteWidget,
   updateLayout,
-  setStatusBarVisible,
 } from "@zos/ui";
 import { px } from "@zos/utils";
-import { getDeviceInfo, SCREEN_SHAPE_SQUARE } from "@zos/device";
+import { configurePage, getCenteredLayout, removeElement } from "../modules/ui-helpers";
 import { log as Logger } from "@zos/utils";
 import { BasePage } from "@zeppos/zml/base-page";
 
-const { screenShape, width: WIDTH } = getDeviceInfo();
 const logger = Logger.getLogger("scenes");
 
 const menuButtonColor = 0x45643B;
@@ -44,35 +41,17 @@ const pageLayout = {
   padding_right: px(72),
 };
 
-function defaultTheme() {
-  if (screenShape === SCREEN_SHAPE_SQUARE) {
-    setStatusBarVisible(false);
-  }
-}
-
-function removeElement(element) {
-  if (element.getType() === widget.VIRTUAL_CONTAINER) {
-    const children = element.layoutChildren;
-    deleteWidget(element);
-
-    children.forEach((item) => {
-      removeElement(item);
-    });
-  } else {
-    deleteWidget(element);
-  }
-}
-
 Page(
   BasePage({
     state: {
       scenes: [],
       vc: null,
       message: null,
+      messageWidgets: [],
     },
 
     onInit() {
-      defaultTheme();
+      configurePage();
     },
 
     build() {
@@ -91,6 +70,9 @@ Page(
         removeElement(this.state.vc);
         this.state.vc = null;
       }
+
+      this.state.messageWidgets.forEach(removeElement);
+      this.state.messageWidgets = [];
     },
 
     createPageContainer() {
@@ -161,32 +143,31 @@ Page(
       this.clearPage();
 
       if (this.state.message || this.state.scenes.length === 0) {
-        const margin = px(WIDTH * 0.08);
-        const contentWidth = px(WIDTH * 0.84);
+        const { x, w } = getCenteredLayout();
 
-        createWidget(widget.TEXT, {
-          x: margin,
+        this.state.messageWidgets.push(createWidget(widget.TEXT, {
+          x,
           y: px(35),
-          w: contentWidth,
+          w,
           h: px(55),
           text: "Available Scenes",
           color: 0xffffff,
           text_size: px(30),
           align_h: align.CENTER_H,
           align_v: align.CENTER_V,
-        });
+        }));
 
-        createWidget(widget.TEXT, {
-          x: margin,
+        this.state.messageWidgets.push(createWidget(widget.TEXT, {
+          x,
           y: px(130),
-          w: contentWidth,
+          w,
           h: px(70),
           text: this.state.message || "No scenes found",
           color: 0xffffff,
           text_size: px(22),
           align_h: align.CENTER_H,
           align_v: align.CENTER_V,
-        });
+        }));
 
         return;
       }
