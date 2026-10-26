@@ -225,6 +225,7 @@ Page(
           logger.log(
             `Device command response: ${JSON.stringify(result)}`
           );
+          return this.loadDevices();
         })
         .catch((error) => {
           logger.log(`SET_DEVICE_STATE error: ${String(error)}`);
