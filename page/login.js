@@ -5,6 +5,7 @@ import {
     align,
 } from "@zos/ui";
 import { px } from "@zos/utils";
+import { setPageBrightTime } from "@zos/display";
 import { configurePage, getCenteredLayout, removeElement, SCREEN_WIDTH } from "../modules/ui-helpers";
 import { log as Logger } from "@zos/utils";
 import { BasePage } from "@zeppos/zml/base-page";
@@ -97,6 +98,10 @@ Page(
 
 
         startLogin() {
+            setPageBrightTime({
+                brightTime: 10000,
+            });
+
             this.request({
                 method: "START_QR_LOGIN",
             })
@@ -121,6 +126,10 @@ Page(
                     if (data.status !== "waiting_for_scan" || !data.content) {
                         throw new Error("QR login was not started");
                     }
+
+                    setPageBrightTime({
+                        brightTime: 10000,
+                    });
 
                     this.state.qrContent = data.content;
                     this.state.status = "waiting_for_scan";

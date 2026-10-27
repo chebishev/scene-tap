@@ -7,6 +7,7 @@ import {
   updateLayout,
 } from "@zos/ui";
 import { px, log as Logger } from "@zos/utils";
+import { setPageBrightTime } from "@zos/display";
 import { configurePage, removeElement } from "../modules/ui-helpers";
 import { BasePage } from "@zeppos/zml/base-page";
 
@@ -83,6 +84,10 @@ Page(
     },
 
     loadDevices() {
+      setPageBrightTime({
+        brightTime: 20000,
+      });
+
       this.request({
         method: "GET_DEVICES",
       })
