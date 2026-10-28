@@ -109,6 +109,9 @@ Page(
     },
 
     loadScenes() {
+      this.state.message = "Loading scenes...";
+      this.renderScenes();
+
       this.request({
         method: "GET_SCENES",
       })

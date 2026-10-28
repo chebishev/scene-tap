@@ -7,9 +7,11 @@ import {
   updateLayout,
 } from "@zos/ui";
 import { px, log as Logger } from "@zos/utils";
-import { setPageBrightTime } from "@zos/display";
 import { configurePage, removeElement } from "../modules/ui-helpers";
 import { BasePage } from "@zeppos/zml/base-page";
+import { Vibrator } from "@zos/sensor";
+
+const vibrator = new Vibrator();
 
 const logger = Logger.getLogger("devices");
 
@@ -84,6 +86,9 @@ Page(
     },
 
     loadDevices() {
+      this.state.message = "Loading devices...";
+      this.state.devices = [];
+      this.renderDevices();
 
       this.request({
         method: "GET_DEVICES",
@@ -107,6 +112,9 @@ Page(
         })
         .catch((error) => {
           logger.log(`GET_DEVICES error: ${String(error)}`);
+
+          vibrator.start();
+
           this.state.devices = [];
           this.state.message = "Failed to load devices";
           this.renderDevices();
