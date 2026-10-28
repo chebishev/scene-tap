@@ -84,9 +84,6 @@ Page(
     },
 
     loadDevices() {
-      setPageBrightTime({
-        brightTime: 20000,
-      });
 
       this.request({
         method: "GET_DEVICES",

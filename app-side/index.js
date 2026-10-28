@@ -2,26 +2,50 @@
 import { BaseSideService } from "@zeppos/zml/base-side";
 import { API_KEY, API_URL } from "../modules/api-config";
 
+const MAX_GET_ATTEMPTS = 3;
+const RETRY_DELAY = 700;
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function requestApi(path, method = "GET", body = undefined) {
-  const response = await fetch({
-    url: `${API_URL}${path}`,
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": API_KEY,
-    },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
+  const canRetry = method === "GET";
 
-  const resBody =
-    typeof response.body === "string"
-      ? JSON.parse(response.body)
-      : response.body;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const response = await fetch({
+        url: `${API_URL}${path}`,
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": API_KEY,
+        },
+        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      });
 
-  return {
-    status: response.status,
-    data: resBody,
-  };
+      const resBody =
+        typeof response.body === "string"
+          ? JSON.parse(response.body)
+          : response.body;
+
+      return {
+        status: response.status,
+        data: resBody,
+      };
+    } catch (error) {
+      if (!canRetry || attempt >= MAX_GET_ATTEMPTS) {
+        throw error;
+      }
+
+      console.log(
+        `GET request failed (attempt ${attempt}/${MAX_GET_ATTEMPTS}):`,
+        String(error)
+      );
+
+      await delay(RETRY_DELAY);
+    }
+  }
 }
 
 async function fetchData(res, path, method = "GET", body = undefined) {
@@ -41,7 +65,7 @@ async function fetchData(res, path, method = "GET", body = undefined) {
 
 AppSideService(
   BaseSideService({
-    onInit() { },
+    onInit() {},
 
     onRequest(req, res) {
       console.log("=====>", req.method);
@@ -113,8 +137,8 @@ AppSideService(
       });
     },
 
-    onRun() { },
+    onRun() {},
 
-    onDestroy() { },
+    onDestroy() {},
   })
 );
