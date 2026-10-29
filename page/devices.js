@@ -3,33 +3,18 @@ import {
   widget,
   align,
   text_style,
-  updateLayout,
 } from "@zos/ui";
 import { px, log as Logger } from "@zos/utils";
 import { configurePage, removeElement } from "../modules/ui-helpers";
+import {
+  createPageContainer,
+  createPageText,
+  finishPageLayout,
+} from "../modules/page-layout";
 import { BasePage } from "@zeppos/zml/base-page";
 import { vibrateError } from "../modules/feedback";
 
 const logger = Logger.getLogger("devices");
-
-const pageLayout = {
-  left: "0",
-  top: "0",
-  width: "100vw",
-  height: "100vh",
-  display: "flex",
-  flex_flow: "column",
-  row_gap: px(20),
-  padding_top: px(35),
-  padding_left: px(30),
-  padding_right: px(30),
-};
-
-const textStyle = {
-  color: 0xffffff,
-  align_v: align.CENTER_V,
-  text_style: text_style.CHAR_WRAP,
-};
 
 Page(
   BasePage({
@@ -57,29 +42,6 @@ Page(
         removeElement(this.state.vc);
         this.state.vc = null;
       }
-    },
-
-    createPageContainer() {
-      const vc = createWidget(widget.VIRTUAL_CONTAINER, {
-        layout: { ...pageLayout },
-      });
-
-      this.state.vc = vc;
-      return vc;
-    },
-
-    createText(parent, text, height, fontSize, alignH) {
-      return createWidget(widget.TEXT, {
-        parent,
-        text,
-        ...textStyle,
-        align_h: alignH ?? align.LEFT,
-        layout: {
-          width: "100%",
-          height,
-          font_size: fontSize,
-        },
-      });
     },
 
     loadDevices() {
@@ -121,37 +83,20 @@ Page(
     renderDevices() {
       this.clearPage();
 
-      const vc = this.createPageContainer();
+      const vc = createPageContainer();
+      this.state.vc = vc;
 
-      this.createText(
-        vc,
-        "Devices",
-        "auto",
-        px(40),
-        align.CENTER_H
-      );
+      createPageText(vc, "Devices", "auto", px(40));
 
       if (this.state.message) {
-        this.createText(
-          vc,
-          this.state.message,
-          "auto",
-          px(24),
-          align.CENTER_H
-        );
-        updateLayout(vc);
+        createPageText(vc, this.state.message, "auto", px(24));
+        finishPageLayout(vc);
         return;
       }
 
       if (this.state.devices.length === 0) {
-        this.createText(
-          vc,
-          "No devices found",
-          "auto",
-          px(24),
-          align.CENTER_H
-        );
-        updateLayout(vc);
+        createPageText(vc, "No devices found", "auto", px(24));
+        finishPageLayout(vc);
         return;
       }
 
@@ -167,7 +112,7 @@ Page(
         },
       });
 
-      updateLayout(vc);
+      finishPageLayout(vc);
     },
 
     createDeviceRow(parent, device) {
@@ -186,8 +131,10 @@ Page(
       createWidget(widget.TEXT, {
         parent: row,
         text: device.name,
-        ...textStyle,
+        color: 0xffffff,
+        align_v: align.CENTER_V,
         align_h: align.LEFT,
+        text_style: text_style.CHAR_WRAP,
         layout: {
           width: "72%",
           height: "100%",

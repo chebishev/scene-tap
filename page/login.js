@@ -1,173 +1,155 @@
 
 import {
-    createWidget,
-    widget,
-    align,
+  createWidget,
+  widget,
 } from "@zos/ui";
-import { px } from "@zos/utils";
-import { configurePage, getCenteredLayout, removeElement, SCREEN_WIDTH } from "../modules/ui-helpers";
-import { log as Logger } from "@zos/utils";
+import { px, log as Logger } from "@zos/utils";
+import {
+  configurePage,
+  removeElement,
+  SCREEN_WIDTH,
+  getQrCodeLayout,
+} from "../modules/ui-helpers";
+import {
+  createPageContainer,
+  createPageText,
+  finishPageLayout,
+} from "../modules/page-layout";
 import { BasePage } from "@zeppos/zml/base-page";
 import { vibrateError } from "../modules/feedback";
 
 const logger = Logger.getLogger("login");
 
 Page(
-    BasePage({
-        state: {
-            qrContent: null,
-            status: "Starting login...",
-            renderedWidgets: [],
-        },
+  BasePage({
+    state: {
+      qrContent: null,
+      status: "Starting login...",
+      vc: null,
+      qrWidget: null,
+    },
 
-        onInit() {
-            configurePage();
-        },
+    onInit() {
+      configurePage();
+    },
 
-        build() {
-            this.startLogin();
-        },
+    build() {
+      this.startLogin();
+    },
 
-        clearRenderedWidgets() {
-            this.state.renderedWidgets.forEach(removeElement);
-            this.state.renderedWidgets = [];
-        },
+    clearPage() {
+      if (this.state.vc) {
+        removeElement(this.state.vc);
+        this.state.vc = null;
+      }
 
-        render() {
-            this.clearRenderedWidgets();
+      if (this.state.qrWidget) {
+        removeElement(this.state.qrWidget);
+        this.state.qrWidget = null;
+      }
+    },
 
-            const { x: margin, w: contentWidth } = getCenteredLayout();
-            const centerX = px(SCREEN_WIDTH / 2);
+    render() {
+      this.clearPage();
 
-            this.state.renderedWidgets.push(createWidget(widget.TEXT, {
-                x: margin,
-                y: px(30),
-                w: contentWidth,
-                h: px(45),
-                text: "Xiaomi Login",
-                color: 0xffffff,
-                text_size: px(28),
-                align_h: align.CENTER_H,
-                align_v: align.CENTER_V,
-            }));
+      const vc = createPageContainer();
+      this.state.vc = vc;
 
-            if (this.state.status === "waiting_for_scan" && this.state.qrContent) {
-                const qrSize = px(SCREEN_WIDTH * 0.58);
-                const qrX = centerX - qrSize / 2;
-                const qrY = px(90);
-                const bgSize = px(SCREEN_WIDTH * 0.625);
+      createPageText(vc, "Xiaomi Login", "auto", px(40));
 
-                this.state.renderedWidgets.push(createWidget(widget.QRCODE, {
-                    content: this.state.qrContent,
-                    x: qrX,
-                    y: qrY,
-                    w: qrSize,
-                    h: qrSize,
-                    bg_x: centerX - bgSize / 2,
-                    bg_y: qrY - px(10),
-                    bg_w: bgSize,
-                    bg_h: bgSize,
-                }));
+      if (this.state.status === "waiting_for_scan" && this.state.qrContent) {
 
-                this.state.renderedWidgets.push(createWidget(widget.TEXT, {
-                    x: margin,
-                    y: qrY + qrSize + px(20),
-                    w: contentWidth,
-                    h: px(40),
-                    text: "Scan with QR Scanner",
-                    color: 0xffffff,
-                    text_size: px(20),
-                    align_h: align.CENTER_H,
-                    align_v: align.CENTER_V,
-                }));
-            } else {
-                this.state.renderedWidgets.push(createWidget(widget.TEXT, {
-                    x: margin,
-                    y: px(180),
-                    w: contentWidth,
-                    h: px(80),
-                    text: this.state.status,
-                    color: 0xffffff,
-                    text_size: px(24),
-                    align_h: align.CENTER_H,
-                    align_v: align.CENTER_V,
-                }));
-            }
-        },
+        this.state.qrWidget = createWidget(widget.QRCODE, {
+          content: this.state.qrContent,
+          ...getQrCodeLayout(),
+        });
 
+        createPageText(
+          vc,
+          "Scan with QR Scanner",
+          "auto",
+          px(24)
+        );
+      } else {
+        createPageText(
+          vc,
+          this.state.status,
+          "auto",
+          px(24)
+        );
+      }
 
+      finishPageLayout(vc);
+    },
 
-        startLogin() {
+    startLogin() {
+      this.request({
+        method: "START_QR_LOGIN",
+      })
+        .then((response) => {
+          const { result = {} } = response;
+          const data = result.data;
 
-            this.request({
-                method: "START_QR_LOGIN",
-            })
-                .then((response) => {
-                    const { result = {} } = response;
-                    const data = result.data;
+          if (result.error) {
+            throw new Error(result.error);
+          }
 
-                    if (result.error) {
-                        throw new Error(result.error);
-                    }
+          if (!data || !data.status) {
+            throw new Error("Invalid login response");
+          }
 
-                    if (!data || !data.status) {
-                        throw new Error("Invalid login response");
-                    }
+          if (data.status === "authenticated") {
+            this.state.status = "Already authenticated";
+            this.render();
+            return;
+          }
 
-                    if (data.status === "authenticated") {
-                        this.state.status = "Already authenticated";
-                        this.render();
-                        return;
-                    }
+          if (data.status !== "waiting_for_scan" || !data.content) {
+            throw new Error("QR login was not started");
+          }
 
-                    if (data.status !== "waiting_for_scan" || !data.content) {
-                        throw new Error("QR login was not started");
-                    }
+          this.state.qrContent = data.content;
+          this.state.status = "waiting_for_scan";
+          this.render();
+          this.checkLoginStatus();
+        })
+        .catch((error) => {
+          logger.log(`START_QR_LOGIN error: ${String(error)}`);
+          vibrateError();
 
-                    this.state.qrContent = data.content;
-                    this.state.status = "waiting_for_scan";
-                    this.render();
-                    this.checkLoginStatus();
-                })
-                .catch((error) => {
-                    logger.log(`START_QR_LOGIN error: ${String(error)}`);
+          this.state.status = "Failed to start login";
+          this.render();
+        });
+    },
 
-                    vibrateError();
+    checkLoginStatus() {
+      this.request({
+        method: "GET_LOGIN_STATUS",
+      })
+        .then((response) => {
+          const { result = {} } = response;
+          const data = result.data;
 
-                    this.state.status = "Failed to start login";
-                    this.render();
-                });
-        },
+          if (data?.status === "authenticated") {
+            this.state.status = "Login successful";
+            this.state.qrContent = null;
+            logger.log("Xiaomi login successful");
+            this.render();
+            return;
+          }
 
-        checkLoginStatus() {
-            this.request({
-                method: "GET_LOGIN_STATUS",
-            })
-                .then((response) => {
-                    const { result = {} } = response;
-                    const data = result.data;
+          if (data?.status === "failed") {
+            this.state.status = "Login failed";
+            this.state.qrContent = null;
+            this.render();
+          }
 
-                    if (data?.status === "authenticated") {
-                        this.state.status = "Login successful";
-                        this.state.qrContent = null;
-                        logger.log("Xiaomi login successful");
-                        this.render();
-                        return;
-                    }
-
-                    if (data?.status === "failed") {
-                        this.state.status = "Login failed";
-                        this.state.qrContent = null;
-                        this.render();
-                        return;
-                    }
-
-                    // Polling will be added after we verify the QR rendering.
-                })
-                .catch((error) => {
-                    logger.log(`GET_LOGIN_STATUS error: ${String(error)}`);
-                    vibrateError();
-                });
-        },
-    })
+          // Polling will be added after we verify the QR rendering.
+        })
+        .catch((error) => {
+          logger.log(`GET_LOGIN_STATUS error: ${String(error)}`);
+          vibrateError();
+        });
+    },
+  })
 );

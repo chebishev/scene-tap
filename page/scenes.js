@@ -1,13 +1,14 @@
 import {
   createWidget,
   widget,
-  align,
-  text_style,
-  updateLayout,
 } from "@zos/ui";
-import { px } from "@zos/utils";
-import { configurePage, getCenteredLayout, removeElement } from "../modules/ui-helpers";
-import { log as Logger } from "@zos/utils";
+import { px, log as Logger } from "@zos/utils";
+import { configurePage, removeElement } from "../modules/ui-helpers";
+import {
+  createPageContainer,
+  createPageText,
+  finishPageLayout,
+} from "../modules/page-layout";
 import { BasePage } from "@zeppos/zml/base-page";
 import { vibrateError } from "../modules/feedback";
 
@@ -15,31 +16,11 @@ const logger = Logger.getLogger("scenes");
 
 const menuButtonColor = 0x45643B;
 
-const defaultTextStyle = {
-  color: 0xffffff,
-  align_v: align.CENTER_V,
-  align_h: align.CENTER_H,
-  text_style: text_style.CHAR_WRAP,
-};
-
 const menuButtonLayout = {
   width: "100%",
   height: px(88),
   font_size: 36,
   corner_radius: px(44),
-};
-
-const pageLayout = {
-  left: "0",
-  top: "0",
-  width: "100vw",
-  height: "100vh",
-  display: "flex",
-  flex_flow: "column",
-  row_gap: px(25),
-  padding_top: px(40),
-  padding_left: px(72),
-  padding_right: px(72),
 };
 
 Page(
@@ -71,31 +52,6 @@ Page(
         removeElement(this.state.vc);
         this.state.vc = null;
       }
-
-      this.state.messageWidgets.forEach(removeElement);
-      this.state.messageWidgets = [];
-    },
-
-    createPageContainer() {
-      const vc = createWidget(widget.VIRTUAL_CONTAINER, {
-        layout: { ...pageLayout },
-      });
-
-      this.state.vc = vc;
-      return vc;
-    },
-
-    createText(parent, text, height, fontSize) {
-      return createWidget(widget.TEXT, {
-        parent,
-        text,
-        ...defaultTextStyle,
-        layout: {
-          width: "100%",
-          height,
-          font_size: fontSize,
-        },
-      });
     },
 
     createSceneButton(parent, scene) {
@@ -149,45 +105,39 @@ Page(
     renderScenes() {
       this.clearPage();
 
-      if (this.state.message || this.state.scenes.length === 0) {
-        const { x, w } = getCenteredLayout();
+      const vc = createPageContainer();
+      this.state.vc = vc;
 
-        this.state.messageWidgets.push(createWidget(widget.TEXT, {
-          x,
-          y: px(35),
-          w,
-          h: px(55),
-          text: "Available Scenes",
-          color: 0xffffff,
-          text_size: px(30),
-          align_h: align.CENTER_H,
-          align_v: align.CENTER_V,
-        }));
-
-        this.state.messageWidgets.push(createWidget(widget.TEXT, {
-          x,
-          y: px(130),
-          w,
-          h: px(70),
-          text: this.state.message || "No scenes found",
-          color: 0xffffff,
-          text_size: px(22),
-          align_h: align.CENTER_H,
-          align_v: align.CENTER_V,
-        }));
-
-        return;
-      }
-
-      // Оригиналният интерфейс с бутоните остава непроменен.
-      const vc = this.createPageContainer();
-
-      this.createText(
+      createPageText(
         vc,
-        "Available Scenes",
+        "Scenes",
         "auto",
         px(40)
       );
+
+      if (this.state.message) {
+        createPageText(
+          vc,
+          this.state.message,
+          "auto",
+          px(24)
+        );
+
+        finishPageLayout(vc);
+        return;
+      }
+
+      if (this.state.scenes.length === 0) {
+        createPageText(
+          vc,
+          "No scenes found",
+          "auto",
+          px(24)
+        );
+
+        finishPageLayout(vc);
+        return;
+      }
 
       for (const scene of this.state.scenes) {
         this.createSceneButton(vc, scene);
@@ -201,7 +151,7 @@ Page(
         },
       });
 
-      updateLayout(vc);
+      finishPageLayout(vc);
     },
 
 
