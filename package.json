@@ -1,7 +1,7 @@
 {
-  "name": "Scene Tap",
+  "name": "SceneTap",
   "version": "1.0.0",
-  "description": "Use MijiaAPI to control your Mi Home Devices",
+  "description": "Control Xiaomi Home devices and scenes from your Amazfit smartwatch.",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

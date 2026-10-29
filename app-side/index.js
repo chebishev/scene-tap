@@ -65,7 +65,7 @@ async function fetchData(res, path, method = "GET", body = undefined) {
 
 AppSideService(
   BaseSideService({
-    onInit() {},
+    onInit() { },
 
     onRequest(req, res) {
       console.log("=====>", req.method);
@@ -137,8 +137,8 @@ AppSideService(
       });
     },
 
-    onRun() {},
+    onRun() { },
 
-    onDestroy() {},
+    onDestroy() { },
   })
 );

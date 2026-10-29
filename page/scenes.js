@@ -137,7 +137,7 @@ Page(
           logger.log(`GET_SCENES error: ${String(error)}`);
 
           vibrateError();
-          
+
           this.state.scenes = [];
           this.state.message = "Failed to load scenes";
           this.renderScenes();

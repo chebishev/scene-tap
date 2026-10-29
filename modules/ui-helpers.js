@@ -1,6 +1,6 @@
 import { deleteWidget, setStatusBarVisible, widget } from "@zos/ui";
 import { px } from "@zos/utils";
-import { getDeviceInfo, SCREEN_SHAPE_SQUARE } from "@zos/device";import { setPageBrightTime } from "@zos/display";
+import { getDeviceInfo, SCREEN_SHAPE_SQUARE } from "@zos/device"; import { setPageBrightTime } from "@zos/display";
 
 const deviceInfo = getDeviceInfo();
 

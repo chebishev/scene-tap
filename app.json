@@ -2,7 +2,7 @@
   "configVersion": "v3",
   "app": {
     "appId": 21008,
-    "appName": "Scene Tap",
+    "appName": "SceneTap",
     "appType": "app",
     "version": {
       "code": 1,
@@ -10,7 +10,7 @@
     },
     "icon": "icon.png",
     "vender": "chebishev",
-    "description": "Use MijiaAPI to control your Mi Home Devices"
+    "description": "Control Xiaomi Home devices and scenes from your Amazfit smartwatch."
   },
   "permissions": [
     "data:os.device.info"
@@ -19,7 +19,7 @@
     "apiVersion": {
       "compatible": "4.0",
       "target": "4.0",
-      "minVersion": "4.2"
+      "minVersion": "4.0"
     }
   },
   "targets": {
@@ -48,7 +48,7 @@
   },
   "i18n": {
     "en-US": {
-      "appName": "Scene Tap"
+      "appName": "SceneTap"
     }
   },
   "defaultLanguage": "en-US"
