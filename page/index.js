@@ -71,12 +71,16 @@ Page(
         push({ url: "page/login" });
       })
 
+      this.createMenuButton(vc, "Scenes", () => {
+        push({ url: "page/scenes" });
+      });
+
       this.createMenuButton(vc, "Devices", () => {
         push({ url: "page/devices" });
       });
 
-      this.createMenuButton(vc, "Scenes", () => {
-        push({ url: "page/scenes" });
+      this.createMenuButton(vc, "About", () => {
+        push({ url: "page/about" });
       });
     },
 

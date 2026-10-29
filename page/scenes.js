@@ -9,6 +9,7 @@ import { px } from "@zos/utils";
 import { configurePage, getCenteredLayout, removeElement } from "../modules/ui-helpers";
 import { log as Logger } from "@zos/utils";
 import { BasePage } from "@zeppos/zml/base-page";
+import { vibrateError } from "../modules/feedback";
 
 const logger = Logger.getLogger("scenes");
 
@@ -134,6 +135,9 @@ Page(
         })
         .catch((error) => {
           logger.log(`GET_SCENES error: ${String(error)}`);
+
+          vibrateError();
+          
           this.state.scenes = [];
           this.state.message = "Failed to load scenes";
           this.renderScenes();

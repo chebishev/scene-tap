@@ -9,26 +9,25 @@
       "name": "1.0.0"
     },
     "icon": "icon.png",
-    "vender": "zepp",
+    "vender": "chebishev",
     "description": "Use MijiaAPI to control your Mi Home Devices"
   },
   "permissions": [
-    "data:os.device.info",
-    "device:os.local_storage"
+    "data:os.device.info"
   ],
   "runtime": {
     "apiVersion": {
-      "compatible": "3.0.0",
-      "target": "3.0.0",
-      "minVersion": "3.0"
+      "compatible": "4.0",
+      "target": "4.0",
+      "minVersion": "4.2"
     }
   },
   "targets": {
-    "common": {
+    "default": {
       "module": {
         "page": {
           "pages": [
-            "page/index", "page/scenes", "page/devices", "page/login"
+            "page/index", "page/scenes", "page/devices", "page/login", "page/about"
           ]
         },
         "app-side": {
@@ -42,7 +41,7 @@
         },
         {
           "st": "s",
-          "dw": 390
+          "dw": 480
         }
       ]
     }

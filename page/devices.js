@@ -1,4 +1,3 @@
-
 import {
   createWidget,
   widget,
@@ -9,9 +8,7 @@ import {
 import { px, log as Logger } from "@zos/utils";
 import { configurePage, removeElement } from "../modules/ui-helpers";
 import { BasePage } from "@zeppos/zml/base-page";
-import { Vibrator } from "@zos/sensor";
-
-const vibrator = new Vibrator();
+import { vibrateError } from "../modules/feedback";
 
 const logger = Logger.getLogger("devices");
 
@@ -113,7 +110,7 @@ Page(
         .catch((error) => {
           logger.log(`GET_DEVICES error: ${String(error)}`);
 
-          vibrator.start();
+          vibrateError();
 
           this.state.devices = [];
           this.state.message = "Failed to load devices";
@@ -239,6 +236,8 @@ Page(
         })
         .catch((error) => {
           logger.log(`SET_DEVICE_STATE error: ${String(error)}`);
+
+          vibrateError();
 
           slideSwitch.setProperty(
             0,

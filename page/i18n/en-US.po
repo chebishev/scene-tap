@@ -1,2 +1,11 @@
-msgid "example"
-msgstr "This is an example in device"
+msgid "ver"
+msgstr "\nver. "
+
+msgid "creator"
+msgstr "This app is created by "
+
+msgid "email"
+msgstr "Feedback: suffer@abv.bg"
+
+msgid "link"
+msgstr "https://chebishev.github.io"

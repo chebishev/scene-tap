@@ -8,6 +8,7 @@ import { px } from "@zos/utils";
 import { configurePage, getCenteredLayout, removeElement, SCREEN_WIDTH } from "../modules/ui-helpers";
 import { log as Logger } from "@zos/utils";
 import { BasePage } from "@zeppos/zml/base-page";
+import { vibrateError } from "../modules/feedback";
 
 const logger = Logger.getLogger("login");
 
@@ -123,10 +124,6 @@ Page(
                         throw new Error("QR login was not started");
                     }
 
-                    setPageBrightTime({
-                        brightTime: 10000,
-                    });
-
                     this.state.qrContent = data.content;
                     this.state.status = "waiting_for_scan";
                     this.render();
@@ -134,6 +131,9 @@ Page(
                 })
                 .catch((error) => {
                     logger.log(`START_QR_LOGIN error: ${String(error)}`);
+
+                    vibrateError();
+
                     this.state.status = "Failed to start login";
                     this.render();
                 });
@@ -166,6 +166,7 @@ Page(
                 })
                 .catch((error) => {
                     logger.log(`GET_LOGIN_STATUS error: ${String(error)}`);
+                    vibrateError();
                 });
         },
     })
