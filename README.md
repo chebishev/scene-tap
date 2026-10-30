@@ -89,3 +89,13 @@ When a request fails, the app can display an error message and provide haptic fe
 ## License
 
 [MIT](LICENSE)
+
+## Screenshots
+
+![Image](./screenshots/1.png)
+![Image](./screenshots/2.png)
+![Image](./screenshots/3.png)
+![Image](./screenshots/4.png)
+![Image](./screenshots/5.png)
+![Image](./screenshots/6.png)
+![Image](./screenshots/7.png)
