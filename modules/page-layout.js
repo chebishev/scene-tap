@@ -15,10 +15,10 @@ export const pageLayout = {
   height: "100vh",
   display: "flex",
   flex_flow: "column",
-  row_gap: px(20),
-  padding_top: px(35),
-  padding_left: px(30),
-  padding_right: px(30),
+  row_gap: px(25),
+  padding_top: px(40),
+  padding_left: px(72),
+  padding_right: px(72),
 };
 
 export const defaultTextStyle = {
