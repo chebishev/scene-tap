@@ -45,6 +45,8 @@ Page(
     },
 
     loadDevices() {
+      const requestId = (this._devicesRequestId || 0) + 1;
+      this._devicesRequestId = requestId;
       this.state.message = "Loading devices...";
       this.state.devices = [];
       this.renderDevices();
@@ -53,6 +55,7 @@ Page(
         method: "GET_DEVICES",
       })
         .then((response) => {
+          if (requestId !== this._devicesRequestId) return;
           const { result = {} } = response;
 
           if (result.error) {
@@ -70,6 +73,7 @@ Page(
           this.renderDevices();
         })
         .catch((error) => {
+          if (requestId !== this._devicesRequestId) return;
           logger.log(`GET_DEVICES error: ${String(error)}`);
 
           vibrateError();
@@ -156,47 +160,59 @@ Page(
     },
 
     setDeviceState(device, state, slideSwitch) {
-      logger.log(`Setting ${device.name} to ${state}`);
+  const requestId = this._devicesRequestId;
 
-      this.request({
-        method: "SET_DEVICE_STATE",
-        params: {
-          did: device.did,
-          state,
-        },
-      })
-        .then((response) => {
-          const { result = {} } = response;
+  logger.log(`Setting ${device.name} to ${state}`);
 
-          if (result.error || result.status >= 400) {
-            throw new Error(
-              result.error || `HTTP ${result.status}`
-            );
-          }
-
-          device.state = state;
-
-          logger.log(
-            `Device command response: ${JSON.stringify(result)}`
-          );
-          return this.loadDevices();
-        })
-        .catch((error) => {
-          logger.log(`SET_DEVICE_STATE error: ${String(error)}`);
-
-          vibrateError();
-
-          slideSwitch.setProperty(
-            0,
-            Boolean(device.state)
-          );
-
-          this.showMessage(`Failed: ${device.name}`);
-        });
+  this.request({
+    method: "SET_DEVICE_STATE",
+    params: {
+      did: device.did,
+      state,
     },
+  })
+    .then((response) => {
+      if (requestId !== this._devicesRequestId) return;
+
+      const { result = {} } = response;
+
+      if (result.error || result.status >= 400) {
+        throw new Error(
+          result.error || `HTTP ${result.status}`
+        );
+      }
+
+      device.state = state;
+
+      logger.log(
+        `Device command response: ${JSON.stringify(result)}`
+      );
+
+      return this.loadDevices();
+    })
+    .catch((error) => {
+      if (requestId !== this._devicesRequestId) return;
+
+      logger.log(`SET_DEVICE_STATE error: ${String(error)}`);
+
+      vibrateError();
+
+      slideSwitch.setProperty(
+        0,
+        Boolean(device.state)
+      );
+
+      this.showMessage(`Failed: ${device.name}`);
+    });
+},
 
     showMessage(message) {
       logger.log(message);
+    },
+
+    onDestroy() {
+      this._devicesRequestId = (this._devicesRequestId || 0) + 1;
+      this.clearPage();
     },
   })
 );
