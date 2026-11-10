@@ -1,4 +1,3 @@
-
 import {
   createWidget,
   widget,
@@ -46,7 +45,8 @@ Page(
     },
 
     onInit() {
-      configurePage();
+      
+      configurePage(10000);
     },
 
     build() {

@@ -16,8 +16,8 @@ export const isSquareScreen =
 export const SCREEN_WIDTH = deviceInfo.width;
 
 /** Apply shared page settings for square displays. And 1 minute display on */
-export function configurePage() {
-  setPageBrightTime({ brightTime: 60000 });
+export function configurePage(setBrightness = 60000) {
+  setPageBrightTime({ brightTime: setBrightness });
 
   if (isSquareScreen) {
     setStatusBarVisible(false);
