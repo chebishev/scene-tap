@@ -83,10 +83,15 @@ Page(
     },
 
     startLogin() {
+      const requestId = (this._loginRequestId || 0) + 1;
+      this._loginRequestId = requestId;
+
       this.request({
         method: "START_QR_LOGIN",
       })
         .then((response) => {
+          if (requestId !== this._loginRequestId) return;
+
           const { result = {} } = response;
           const data = result.data;
 
@@ -111,9 +116,11 @@ Page(
           this.state.qrContent = data.content;
           this.state.status = "waiting_for_scan";
           this.render();
-          this.checkLoginStatus();
+          this.checkLoginStatus(requestId);
         })
         .catch((error) => {
+          if (requestId !== this._loginRequestId) return;
+
           logger.log(`START_QR_LOGIN error: ${String(error)}`);
           vibrateError();
 
@@ -122,11 +129,13 @@ Page(
         });
     },
 
-    checkLoginStatus() {
+    checkLoginStatus(requestId) {
       this.request({
         method: "GET_LOGIN_STATUS",
       })
         .then((response) => {
+          if (requestId !== this._loginRequestId) return;
+
           const { result = {} } = response;
           const data = result.data;
 
@@ -147,9 +156,16 @@ Page(
           // Polling will be added after we verify the QR rendering.
         })
         .catch((error) => {
+          if (requestId !== this._loginRequestId) return;
+
           logger.log(`GET_LOGIN_STATUS error: ${String(error)}`);
           vibrateError();
         });
+    },
+
+    onDestroy() {
+      this._loginRequestId = (this._loginRequestId || 0) + 1;
+      this.clearPage();
     },
   })
 );
