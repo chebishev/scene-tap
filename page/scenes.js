@@ -66,6 +66,9 @@ Page(
     },
 
     loadScenes() {
+      const requestId = (this._scenesRequestId || 0) + 1;
+      this._scenesRequestId = requestId;
+
       this.state.message = "Loading scenes...";
       this.renderScenes();
 
@@ -73,6 +76,8 @@ Page(
         method: "GET_SCENES",
       })
         .then((response) => {
+          if (requestId !== this._scenesRequestId) return;
+
           const { result = {} } = response;
 
           if (result.error) {
@@ -90,6 +95,8 @@ Page(
           this.renderScenes();
         })
         .catch((error) => {
+          if (requestId !== this._scenesRequestId) return;
+
           logger.log(`GET_SCENES error: ${String(error)}`);
 
           vibrateError();
@@ -99,8 +106,6 @@ Page(
           this.renderScenes();
         });
     },
-
-
 
     renderScenes() {
       this.clearPage();
@@ -181,6 +186,11 @@ Page(
         .catch((error) => {
           logger.log(`RUN_SCENE error: ${String(error)}`);
         });
+    },
+
+    onDestroy() {
+      this._scenesRequestId = (this._scenesRequestId || 0) + 1;
+      this.clearPage();
     },
   })
 );
